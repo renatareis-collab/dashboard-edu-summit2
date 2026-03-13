@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu Summit 2026 - Relatório de Performance</title>
+    <!-- Tailwind CSS para estilização rápida e moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Biblioteca para exportação de imagem -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Fonte Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; color: #1e293b; }
+        .glass-card { background: white; border-radius: 2rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .gradient-purple { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+        .progress-ring-circle { transition: stroke-dashoffset 0.8s ease-in-out; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .tag-base { background: #e2e8f0; color: #64748b; padding: 2px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; }
+        .tag-top { background: #d8b4fe; color: #7e22ce; padding: 2px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; }
+        /* Animação de atualização de dados */
+        .updating { animation: pulse 0.6s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="p-4 md:p-10 flex justify-center">
+
+    <div id="dashboard-container" class="w-full max-w-[900px] space-y-6">
+        
+        <!-- Cabeçalho -->
+        <header class="flex justify-between items-start mb-2">
+            <div>
+                <h1 class="text-4xl font-extrabold text-[#2d3748] tracking-tight">Edu Summit 2026</h1>
+                <p class="text-slate-400 font-medium text-lg">Relatório de Performance Comercial</p>
+            </div>
+            <div class="flex flex-col items-end gap-3">
+                <div class="bg-white px-5 py-2.5 rounded-full shadow-sm flex items-center gap-3 border border-slate-100">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                    <span class="text-sm font-bold text-slate-600">Acompanhamento Março</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="loadData()" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-purple-600 transition-colors">Atualizar Dados ↻</button>
+                    <button onclick="exportDashboard()" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-purple-600 transition-colors">Exportar PNG ↓</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Bloco de Performance Superior -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Cards de Meta Esquerda -->
+            <div class="md:col-span-2 glass-card p-10 flex flex-col justify-between">
+                <div>
+                    <span class="text-purple-500 font-bold text-xs uppercase tracking-[0.2em]">Performance do Mês</span>
+                    <h2 id="valor-realizado" class="text-7xl font-black text-slate-800 mt-2 tracking-tighter">R$ 0,00</h2>
+                    <p class="text-slate-400 text-sm mt-2 font-medium italic">Realizado em Março 2026</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mt-12">
+                    <div class="bg-slate-50/50 p-7 rounded-[2rem] border border-slate-100 relative">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Meta do Mês</span>
+                            <span class="tag-base">BASE</span>
+                        </div>
+                        <p id="meta-base" class="text-2xl font-black text-slate-700">R$ 250.000,00</p>
+                        <p id="falta-base" class="text-[11px] font-bold text-red-500 mt-1">Falta R$ 250.000,00</p>
+                    </div>
+                    <div class="bg-purple-50/30 p-7 rounded-[2rem] border border-purple-100 relative">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Meta Desafio</span>
+                            <span class="tag-top">TOP</span>
+                        </div>
+                        <p id="meta-desafio" class="text-2xl font-black text-purple-800">R$ 0,00</p>
+                        <p id="falta-desafio" class="text-[11px] font-bold text-purple-400 mt-1">Falta R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico Circular Direita -->
+            <div class="gradient-purple rounded-[2.5rem] p-10 text-white flex flex-col items-center justify-center relative overflow-hidden">
+                <div class="relative flex items-center justify-center mb-8">
+                    <svg class="w-48 h-48">
+                        <circle class="text-white/10" stroke-width="12" stroke="currentColor" fill="transparent" r="82" cx="96" cy="96"/>
+                        <circle id="circle-progress" class="text-white progress-ring-circle" stroke-width="12" stroke-dasharray="515" stroke-dashoffset="515" stroke-linecap="round" stroke="currentColor" fill="transparent" r="82" cx="96" cy="96"/>
+                    </svg>
+                    <div class="absolute text-center flex flex-col">
+                        <span id="pct-meta" class="text-5xl font-black leading-none">0%</span>
+                    </div>
+                </div>
+                <h3 class="font-bold text-sm uppercase tracking-widest mb-1 text-center">% Alcançada (Meta Base)</h3>
+                <p id="pct-desafio-txt" class="text-[11px] opacity-70 font-semibold uppercase tracking-widest text-center">0,0% da Meta Desafio</p>
+            </div>
+        </div>
+
+        <!-- Progresso Anual -->
+        <div class="glass-card p-10">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h3 class="text-3xl font-black text-slate-800 tracking-tight">Progresso Anual</h3>
+                </div>
+                <div class="flex flex-col items-end">
+                    <span id="pct-anual" class="text-4xl font-black text-slate-800 leading-none mb-1">0%</span>
+                    <span class="bg-blue-100 text-blue-600 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter">Crescimento Acelerado</span>
+                </div>
+            </div>
+            
+            <div class="w-full h-6 bg-slate-100 rounded-full overflow-hidden mb-8 p-1">
+                <div id="bar-anual" class="h-full bg-purple-600 rounded-full transition-all duration-1000 shadow-sm" style="width: 0%"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-10">
+                <div class="flex items-center gap-5">
+                    <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm border border-purple-100">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Total Acumulado 2026</p>
+                        <p id="acumulado-anual" class="text-2xl font-black text-slate-700">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-5">
+                    <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Meta Geral Anual</p>
+                        <p id="meta-anual" class="text-2xl font-black text-slate-700">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="glass-card p-10 overflow-hidden">
+            <div class="flex justify-between items-center mb-10">
+                <div>
+                    <h3 class="text-3xl font-black text-slate-800 tracking-tight">Pipeline de Vendas</h3>
+                    <p class="text-sm text-slate-400 font-bold mt-1 uppercase tracking-widest">Propostas em andamento (Março)</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] text-purple-400 font-black uppercase tracking-[0.2em] mb-1">Valor Total em Negociação</p>
+                    <p id="total-pipeline" class="text-4xl font-black text-purple-600 tracking-tighter">R$ 0,00</p>
+                </div>
+            </div>
+
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] border-b border-slate-50">
+                        <th class="pb-6">Empresa</th>
+                        <th class="pb-6 text-center">Status</th>
+                        <th class="pb-6 text-right">Valor da Proposta</th>
+                    </tr>
+                </thead>
+                <tbody id="pipeline-body" class="text-slate-600 font-bold text-base">
+                    <!-- Conteúdo gerado via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // URLs das planilhas publicadas como CSV
+        const URL_RESUMO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSpQ-t8RDZKdAyrtOBcKdz56IIFJ_-UVz3fgkMYu6WiRGvHOiCFSMvvk_WTysfwELByKnkwWJYWYtcP/pub?gid=0&single=true&output=csv"; 
+        const URL_PIPELINE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSpQ-t8RDZKdAyrtOBcKdz56IIFJ_-UVz3fgkMYu6WiRGvHOiCFSMvvk_WTysfwELByKnkwWJYWYtcP/pub?gid=911196692&single=true&output=csv"; 
+
+        const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // Meta fixa solicitada
+        const META_BASE_FIXA = 250000;
+
+        function parseVal(val) {
+            if (!val) return 0;
+            let clean = val.trim().replace(/[R$\s.]/g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
+        async function loadData() {
+            document.getElementById('dashboard-container').classList.add('updating');
+            try {
+                const ts = new Date().getTime();
+                
+                // 1. CARREGAR RESUMO
+                const resResumo = await fetch(`${URL_RESUMO}&t=${ts}`);
+                const textResumo = await resResumo.text();
+                const linhas = textResumo.split(/\r?\n/).filter(l => l.trim() !== "").map(l => l.split(','));
+                
+                if (linhas.length > 1) {
+                    const d = linhas[1];
+                    const realizado = parseVal(d[1]);
+                    const metaBase = META_BASE_FIXA; 
+                    const metaDesafio = parseVal(d[3]) || 1;
+                    const acumuladoAnual = parseVal(d[4]);
+                    const metaAnual = parseVal(d[5]) || 1;
+
+                    document.getElementById('valor-realizado').innerText = fmt.format(realizado);
+                    document.getElementById('meta-base').innerText = fmt.format(metaBase);
+                    document.getElementById('meta-desafio').innerText = fmt.format(metaDesafio);
+                    document.getElementById('falta-base').innerText = `Falta ${fmt.format(Math.max(metaBase - realizado, 0))}`;
+                    document.getElementById('falta-desafio').innerText = `Falta ${fmt.format(Math.max(metaDesafio - realizado, 0))}`;
+
+                    const pctBase = Math.min((realizado / metaBase) * 100, 100);
+                    const pctDesafio = (realizado / metaDesafio) * 100;
+                    document.getElementById('pct-meta').innerText = Math.round((realizado / metaBase) * 100) + "%";
+                    document.getElementById('pct-desafio-txt').innerText = `${pctDesafio.toFixed(1).replace('.', ',')}% da Meta Desafio`;
+                    
+                    const circle = document.getElementById('circle-progress');
+                    const circumference = 515; 
+                    circle.style.strokeDashoffset = circumference - (pctBase / 100) * circumference;
+
+                    const pctAnual = Math.min((acumuladoAnual / metaAnual) * 100, 100);
+                    document.getElementById('pct-anual').innerText = pctAnual.toFixed(1).replace('.', ',') + "%";
+                    document.getElementById('bar-anual').style.width = pctAnual + "%";
+                    document.getElementById('acumulado-anual').innerText = fmt.format(acumuladoAnual);
+                    document.getElementById('meta-anual').innerText = fmt.format(metaAnual);
+                }
+
+                // 2. CARREGAR PIPELINE
+                const resPipe = await fetch(`${URL_PIPELINE}&t=${ts}`);
+                const textPipe = await resPipe.text();
+                const linhasPipe = textPipe.split(/\r?\n/).slice(1).filter(l => l.trim() !== "");
+                
+                let html = "";
+                let total = 0;
+
+                linhasPipe.forEach(linha => {
+                    const col = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (col.length >= 2) {
+                        const nome = col[0].replace(/"/g, '').trim();
+                        const valor = parseVal(col[1]);
+                        if (nome !== "") {
+                            total += valor;
+                            html += `
+                                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                                    <td class="py-7 text-slate-800 font-bold">${nome}</td>
+                                    <td class="py-7 text-center">
+                                        <span class="px-5 py-2 rounded-full bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest border border-blue-100">Em análise de proposta</span>
+                                    </td>
+                                    <td class="py-7 text-right font-black text-slate-900">${fmt.format(valor)}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+                });
+
+                document.getElementById('pipeline-body').innerHTML = html || '<tr><td colspan="3" class="py-10 text-center text-slate-400">Nenhuma proposta encontrada</td></tr>';
+                document.getElementById('total-pipeline').innerText = fmt.format(total);
+
+            } catch (e) {
+                console.error("Erro ao carregar dados:", e);
+            } finally {
+                setTimeout(() => document.getElementById('dashboard-container').classList.remove('updating'), 500);
+            }
+        }
+
+        function exportDashboard() {
+            const container = document.getElementById('dashboard-container');
+            html2canvas(container, { 
+                backgroundColor: '#f0f2f5', 
+                scale: 2,
+                useCORS: true 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Dashboard_EduSummit_Março.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        // Inicia carregamento ao abrir a página
+        window.onload = loadData;
+    </script>
+</body>
+</html>
